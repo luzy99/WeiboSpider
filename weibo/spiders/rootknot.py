@@ -9,10 +9,14 @@ import time
 class WeiboSpider(scrapy.Spider):
     name = 'rootknot'
     allowed_domains = ['m.weibo.cn']
-    key = '李彦宏 泼水'
+    key = '微博'
     start_urls = [
         ('https://m.weibo.cn/api/container/getIndex?containerid=100103type%3D60%26q%3D'+key+'&page_type=searchall')]
 
+    def __init__(self, key=None, *args, **kwargs):
+        super(WeiboSpider, self).__init__(*args, **kwargs)
+        self.start_urls = [
+        ('https://m.weibo.cn/api/container/getIndex?containerid=100103type%3D60%26q%3D'+key+'&page_type=searchall')]
     def parse(self, response):
         ss = json.loads(response.body)
         bloglist = ss['data']['cards'][0]['card_group']
