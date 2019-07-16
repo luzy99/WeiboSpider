@@ -7,3 +7,6 @@
 scrapy crawl knotroot
 ```
 运行
+
+数据库结果：
+[图片]
