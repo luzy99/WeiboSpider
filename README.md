@@ -6,4 +6,9 @@
 ```
 scrapy crawl knotroot
 ```
-运行
+运行,可加参数
+key = 搜索内容
+
+```
+scrapy crawl rootknot -a key=xxx
+```
