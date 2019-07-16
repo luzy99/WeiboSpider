@@ -27,7 +27,7 @@ class WeiboPipeline(object):
         self.cur = self.conn.cursor()
 
     def process_item(self, item, spider):
-        mid = item.get("mid", "N/A")    # 有的图书有数据项缺失，这里做了容错处理
+        mid = item.get("mid", "N/A")    
         userid = item.get("userid", "N/A")
         verified_type = item.get("verified_type", "N/A")
         text = item.get("text", "N/A")

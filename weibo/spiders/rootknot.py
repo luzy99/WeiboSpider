@@ -9,7 +9,7 @@ import time
 class WeiboSpider(scrapy.Spider):
     name = 'rootknot'
     allowed_domains = ['m.weibo.cn']
-    key = '东南大学'
+    key = '李彦宏 泼水'
     start_urls = [
         ('https://m.weibo.cn/api/container/getIndex?containerid=100103type%3D60%26q%3D'+key+'&page_type=searchall')]
 
@@ -19,7 +19,7 @@ class WeiboSpider(scrapy.Spider):
 
         for i in bloglist:
             yield scrapy.Request('https://m.weibo.cn/detail/'+i['mblog']['id'], callback=self.root_knot)
-        for i in range(2, 5):
+        for i in range(2, 6):
             try:
                 yield scrapy.Request(response.url+'&page='+str(i), callback=self.search_url)
             except:
@@ -45,7 +45,10 @@ class WeiboSpider(scrapy.Spider):
             item['mid'] = status['id']
             item['userid'] = status['user']['id']
             item['verified_type'] = status['user']['verified_type']
-            item['text'] = status['text']
+
+            reg = re.compile('<[^>]*>')
+            item['text'] = reg.sub('', status['text'])
+
             item['created_at'] = status['created_at']
             item['created_at'] = time.strftime(
                 '%Y-%m-%d %H:%M:%S', time.strptime(item['created_at'], '%a%b%d%H:%M:%S%z%Y'))
