@@ -8,11 +8,8 @@
 import scrapy
 
 
-class WeiboItem(scrapy.Item):
+class RootknotItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     mid = scrapy.Field()
-    userid = scrapy.Field()
-    verified_type = scrapy.Field()
-    text = scrapy.Field()
-    created_at = scrapy.Field()
+    flag = scrapy.Field()

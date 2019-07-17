@@ -48,7 +48,7 @@ DOWNLOAD_DELAY = 1
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
-#    'weibo.middlewares.WeiboSpiderMiddleware': 543,
+#    'weibo.middlewares.RootknotSpiderMiddleware': 543,
 # }
 
 # Enable or disable downloader middlewares
@@ -66,7 +66,7 @@ DOWNLOAD_DELAY = 1
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 # ITEM_PIPELINES = {
-#    'weibo.pipelines.WeiboPipeline': 300,
+#    'weibo.pipelines.RootknotPipeline': 300,
 # }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -109,7 +109,7 @@ USER_AGENT = random.choice(USER_AGENT_LIST)
 
 
 ITEM_PIPELINES = {
-    'weibo.pipelines.WeiboPipeline': 300,
+    'weibo.pipelines.RootknotPipeline': 300,
 }
 
 
