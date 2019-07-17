@@ -26,11 +26,14 @@ class RootknotPipeline(object):
     tableName = RootknotSpider.key + '_' + RootknotSpider.name
 
     def __init__(self):
-        self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
-                                    passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
+        self.conn = pymysql.connect(host=settings.MYSQL_HOST,
+                                    user=settings.MYSQL_USER,
+                                    passwd=settings.MYSQL_PASSWD,
+                                    db=settings.MYSQL_DBNAME, charset='utf8')
         self.cur = self.conn.cursor()
-        sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` (`mid` varchar(20) NOT NULL,`flag` tinyint(1) NOT NULL,PRIMARY KEY (`mid`))".format(
-            self.tableName)
+        sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` "\
+            "(`mid` varchar(20) NOT NULL,`flag` tinyint(1) NOT NULL,"\
+            "PRIMARY KEY (`mid`))".format(self.tableName)
         self.cur.execute(sql)
         self.conn.commit()
 
