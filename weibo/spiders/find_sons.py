@@ -6,21 +6,17 @@ import json
 import re
 from ..items import FindsonsItem
 import time
-from ..pipelines import RootknotPipeline
-
-def getkeys():
-    mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
-                           passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
-    mycursor = mydb.cursor()
-    mycursor.execute("SELECT mid FROM {}".format(RootknotPipeline.tableName))
-    myresult = mycursor.fetchall()
-    return myresult
+from weibo.spiders.rootknot import RootknotSpider
 
 
 class FindSonsSpider(scrapy.Spider):
     name = 'find_sons'
     allowed_domains = ['m.weibo.cn']
-    start_urls = ['https://m.weibo.cn/detail/{}'.format(result[0]) for result in getkeys()]
+    start_urls = []
+
+    def __init__(self):
+        self.start_urls = [
+            'https://m.weibo.cn/detail/{}'.format(result[0]) for result in self.getkeys()]
 
     def parse(self, response):
         render_data = re.findall(
@@ -97,5 +93,11 @@ class FindSonsSpider(scrapy.Spider):
                 yield scrapy.Request('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page={}'.
                                      format(status['id'], page), callback=self.search_son_list)'''
 
-
-
+    def getkeys(self):
+        mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
+                               passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT mid FROM {}".format(
+            RootknotSpider.key+'_rootknot'))
+        myresult = mycursor.fetchall()
+        return myresult

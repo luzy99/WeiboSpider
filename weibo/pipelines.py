@@ -8,7 +8,8 @@ import pymysql
 from weibo import settings
 from weibo.spiders.rootknot import RootknotSpider
 from weibo.spiders.find_sons import FindSonsSpider
-
+from weibo.items import FindsonsItem
+from weibo.items import RootknotItem
 
 class RootknotPipeline(object):
     tableName = RootknotSpider.key + '_' + RootknotSpider.name
@@ -26,17 +27,14 @@ class RootknotPipeline(object):
         self.conn.commit()
 
     def process_item(self, item, spider):
-        mid = item.get("mid")
-        flag = item.get("flag")
-        # userid = item.get("userid", "N/A")
-        # verified_type = item.get("verified_type", "N/A")
-        # text = item.get("text", "N/A")
-        # created_at = item.get("created_at", "N/A")
+        if isinstance(item, RootknotItem):
+            mid = item.get("mid")
+            flag = item.get("flag")
 
-        sql = "insert ignore into {}(mid, flag) VALUES (%s,%s)".format(
-            self.tableName)
-        self.cur.execute(sql, (mid, flag))
-        self.conn.commit()
+            sql = "insert ignore into {}(mid, flag) VALUES (%s,%s)".format(
+                self.tableName)
+            self.cur.execute(sql, (mid, flag))
+            self.conn.commit()
 
     def close_spider(self, spider):
         self.cur.close()
@@ -59,22 +57,23 @@ class FindsonsPipeline(object):
         self.conn.commit()
 
     def process_item(self, item, spider):
-        pid = item.get("pid", "N/A")
-        mid = item.get("mid", "N/A")
-        userid = item.get("userid", "N/A")
-        verified_type = item.get("verified_type")
-        text = item.get("text", "N/A")
-        created_at = item.get("created_at", "N/A")
-        reposts_count = item.get("reposts_count", "N/A")
-        comments_count = item.get("comments_count", "N/A")
-        attitudes_count = item.get("attitudes_count", "N/A")
+        if isinstance(item, FindsonsItem):
+            pid = item.get("pid", "N/A")
+            mid = item.get("mid", "N/A")
+            userid = item.get("userid", "N/A")
+            verified_type = item.get("verified_type")
+            text = item.get("text", "N/A")
+            created_at = item.get("created_at", "N/A")
+            reposts_count = item.get("reposts_count", "N/A")
+            comments_count = item.get("comments_count", "N/A")
+            attitudes_count = item.get("attitudes_count", "N/A")
 
-        sql = "insert ignore into {}(mid, pid, userid, verified_type, text" \
-              ", created_at, reposts_count, comments_count, attitudes_count) VALUES " \
-              "(%s, %s, %s, %s, %s, %s, %s, %s, %s)".format(self.tableName)
-        self.cur.execute(sql, (mid, pid, userid, verified_type, text,
-                               created_at, reposts_count, comments_count, attitudes_count))
-        self.conn.commit()
+            sql = "insert ignore into {}(mid, pid, userid, verified_type, text" \
+                ", created_at, reposts_count, comments_count, attitudes_count) VALUES " \
+                "(%s, %s, %s, %s, %s, %s, %s, %s, %s)".format(self.tableName)
+            self.cur.execute(sql, (mid, pid, userid, verified_type, text,
+                                created_at, reposts_count, comments_count, attitudes_count))
+            self.conn.commit()
 
     def close_spider(self, spider):
         self.cur.close()
