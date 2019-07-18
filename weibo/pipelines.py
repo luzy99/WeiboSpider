@@ -12,7 +12,7 @@ from weibo.items import FindsonsItem
 from weibo.items import RootknotItem
 
 class RootknotPipeline(object):
-    tableName = RootknotSpider.key + '_' + RootknotSpider.name
+    tableName = RootknotSpider.key + '_rootknot'
 
     def __init__(self):
         self.conn = pymysql.connect(host=settings.MYSQL_HOST,
@@ -35,6 +35,7 @@ class RootknotPipeline(object):
                 self.tableName)
             self.cur.execute(sql, (mid, flag))
             self.conn.commit()
+        return item
 
     def close_spider(self, spider):
         self.cur.close()
@@ -42,7 +43,7 @@ class RootknotPipeline(object):
 
 
 class FindsonsPipeline(object):
-    tableName = RootknotSpider.key + '_' + FindSonsSpider.name
+    tableName = RootknotSpider.key + '_findsons'
 
     def __init__(self):
         self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
@@ -67,13 +68,14 @@ class FindsonsPipeline(object):
             reposts_count = item.get("reposts_count", "N/A")
             comments_count = item.get("comments_count", "N/A")
             attitudes_count = item.get("attitudes_count", "N/A")
-
+            print(item)
             sql = "insert ignore into {}(mid, pid, userid, verified_type, text" \
                 ", created_at, reposts_count, comments_count, attitudes_count) VALUES " \
                 "(%s, %s, %s, %s, %s, %s, %s, %s, %s)".format(self.tableName)
             self.cur.execute(sql, (mid, pid, userid, verified_type, text,
                                 created_at, reposts_count, comments_count, attitudes_count))
             self.conn.commit()
+        return item
 
     def close_spider(self, spider):
         self.cur.close()

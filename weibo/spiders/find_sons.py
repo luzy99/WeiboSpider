@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-
+import scrapy
 import pymysql
-from findsons import settings
+from weibo import settings
 import json
 import re
 from ..items import FindsonsItem
 import time
 import requests
-import scrapy
 from weibo.spiders.rootknot import RootknotSpider
 
 
@@ -44,7 +43,8 @@ class FindSonsSpider(scrapy.Spider):
         if item['reposts_count'] == 0:
             pass
         else:
-            resp = requests.get('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page=1'.format(item['mid']))
+            resp = requests.get(
+                'https://m.weibo.cn/api/statuses/repostTimeline?id={}&page=1'.format(item['mid']))
             resp.encoding = 'utf-8'
             resp_json = json.loads(resp.text)
             if resp_json['ok'] == 1:
@@ -55,7 +55,6 @@ class FindSonsSpider(scrapy.Spider):
             else:
                 item['pid'] = '-1'
         yield item
-
 
     def search_son_list(self, response):
         ss = json.loads(response.body)
