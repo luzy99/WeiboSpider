@@ -16,15 +16,19 @@ class FindSonsSpider(scrapy.Spider):
     start_urls = []
     key = ''
 
+    @classmethod
+    def changeKey(cls, key):
+        cls.key = key
+
     def __init__(self, key=None, *args, **kwargs):
         super(FindSonsSpider, self).__init__(*args, **kwargs)
-        self.key = key
+        self.changeKey(key)
 
     def start_requests(self):
         self.start_urls = [
             'https://m.weibo.cn/detail/{}'.format(result[0]) for result in self.getkeys()]
         for url in self.start_urls:
-                yield scrapy.Request(url, callback=self.parse)
+            yield scrapy.Request(url, callback=self.parse)
 
     def parse(self, response):
         render_data = re.findall(

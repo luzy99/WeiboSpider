@@ -11,6 +11,7 @@ from weibo.spiders.find_sons import FindSonsSpider
 from weibo.items import FindsonsItem
 from weibo.items import RootknotItem
 
+
 class RootknotPipeline(object):
     tableName = RootknotSpider.key + '_rootknot'
 
@@ -43,7 +44,7 @@ class RootknotPipeline(object):
 
 
 class FindsonsPipeline(object):
-    tableName = RootknotSpider.key + '_findsons'
+    tableName = FindSonsSpider.key + '_findsons'
 
     def __init__(self):
         self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
