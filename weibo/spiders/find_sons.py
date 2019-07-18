@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
-import scrapy
+
 import pymysql
-from weibo import settings
+from findsons import settings
 import json
 import re
 from ..items import FindsonsItem
 import time
-from ..pipelines import RootknotPipeline
+import requests
+import scrapy
+
 
 def getkeys():
     mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
                            passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
     mycursor = mydb.cursor()
-    mycursor.execute("SELECT mid FROM {}".format(RootknotPipeline.tableName))
+    mycursor.execute("SELECT mid FROM rootknot")
     myresult = mycursor.fetchall()
     return myresult
 
@@ -42,15 +44,22 @@ class FindSonsSpider(scrapy.Spider):
         item['reposts_count'] = status['reposts_count']
         item['comments_count'] = status['comments_count']
         item['attitudes_count'] = status['attitudes_count']
-        pages = (item['reposts_count']//9)+1
-        yield item
 
         if item['reposts_count'] == 0:
             pass
         else:
-            for page in range(1, pages):
-                yield scrapy.Request('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page={}'.
-                                     format(status['id'], page), callback=self.search_son_list)
+            resp = requests.get('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page=1'.format(item['mid']))
+            resp.encoding = 'utf-8'
+            resp_json = json.loads(resp.text)
+            if resp_json['ok'] == 1:
+                pages = resp_json['data']['max']
+                for page in range(1, pages):
+                    yield scrapy.Request('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page={}'.
+                                         format(item['mid'], page), callback=self.search_son_list)
+            else:
+                item['pid'] = '-1'
+        yield item
+
 
     def search_son_list(self, response):
         ss = json.loads(response.body)
