@@ -7,17 +7,24 @@ import re
 from ..items import FindsonsItem
 import time
 import requests
-from weibo.spiders.rootknot import RootknotSpider
+# from weibo.spiders.rootknot import RootknotSpider
 
 
 class FindSonsSpider(scrapy.Spider):
     name = 'find_sons'
     allowed_domains = ['m.weibo.cn']
     start_urls = []
+    key = ''
 
-    def __init__(self):
+    def __init__(self, key=None, *args, **kwargs):
+        super(FindSonsSpider, self).__init__(*args, **kwargs)
+        self.key = key
+
+    def start_requests(self):
         self.start_urls = [
             'https://m.weibo.cn/detail/{}'.format(result[0]) for result in self.getkeys()]
+        for url in self.start_urls:
+                yield scrapy.Request(url, callback=self.parse)
 
     def parse(self, response):
         render_data = re.findall(
@@ -106,6 +113,6 @@ class FindSonsSpider(scrapy.Spider):
                                passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
         mycursor = mydb.cursor()
         mycursor.execute("SELECT mid FROM {}".format(
-            RootknotSpider.key+'_rootknot'))
+            self.key+'_rootknot'))
         myresult = mycursor.fetchall()
         return myresult
