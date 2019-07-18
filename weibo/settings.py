@@ -110,6 +110,7 @@ USER_AGENT = random.choice(USER_AGENT_LIST)
 
 ITEM_PIPELINES = {
     'weibo.pipelines.RootknotPipeline': 300,
+    'weibo.pipelines.FindsonsPipeline': 400,
 }
 
 
