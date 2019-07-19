@@ -11,7 +11,7 @@
 
 import random
 
-DOWNLOAD_DELAY=1
+DOWNLOAD_DELAY = 3
 BOT_NAME = 'ips'
 
 SPIDER_MODULES = ['ips.spiders']
@@ -39,34 +39,34 @@ ROBOTSTXT_OBEY = False
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
+# DEFAULT_REQUEST_HEADERS = {
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 #   'Accept-Language': 'en',
-#}
+# }
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
+# SPIDER_MIDDLEWARES = {
 #    'ips.middlewares.IpsSpiderMiddleware': 543,
-#}
+# }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'ips.middlewares.IpsDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   'ips.middlewares.ProxyMiddleware': 100,
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
+# EXTENSIONS = {
 #    'scrapy.extensions.telnet.TelnetConsole': None,
-#}
+# }
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
+# ITEM_PIPELINES = {
 #    'ips.pipelines.IpsPipeline': 300,
-#}
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -112,9 +112,9 @@ ITEM_PIPELINES = {
 }
 
 MYSQL_HOST = '127.0.0.1'
-MYSQL_DBNAME = 'ips'
+MYSQL_DBNAME = 'weibo'
 MYSQL_USER = 'root'  # 数据库账号，请修改
-MYSQL_PASSWD = 'root'
+MYSQL_PASSWD = '123456'
 MYSQL_PORT = 3306
 
 PROXIES = [

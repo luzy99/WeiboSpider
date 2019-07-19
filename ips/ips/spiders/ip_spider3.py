@@ -3,18 +3,21 @@ import scrapy
 from ..items import IpsItem
 import re
 
+
 class IpSpider3Spider(scrapy.Spider):
     name = 'ip_spider3'
     allowed_domains = ['xicidaili.com']
-    start_urls = ['https://www.xicidaili.com/nn/{}'.format(i) for i in range(401,800)]
+    start_urls = [
+        'https://www.xicidaili.com/nn/{}'.format(i) for i in range(401, 800)]
 
     def parse(self, response):
-        ips=response.css('#ip_list>tr.odd>td:nth-of-type(2)::text').extract()
-        #ips=soup.find_all('td',attrs={'data-title':'IP'})
-        ports=response.css('#ip_list>tr.odd>td:nth-of-type(3)::text').extract()
-        #ports=soup.find_all('td',attrs={'data-title':'PORT'})
-        item=IpsItem()
-        for ip,port in zip(ips,ports):
-            item['ip']=ip
-            item['port']=port
+        ips = response.css('#ip_list>tr.odd>td:nth-of-type(2)::text').extract()
+        # ips=soup.find_all('td',attrs={'data-title':'IP'})
+        ports = response.css(
+            '#ip_list>tr.odd>td:nth-of-type(3)::text').extract()
+        # ports=soup.find_all('td',attrs={'data-title':'PORT'})
+        item = IpsItem()
+        for ip, port in zip(ips, ports):
+            item['ip'] = ip
+            item['port'] = port
             yield item

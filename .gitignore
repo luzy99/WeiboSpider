@@ -7,3 +7,10 @@ weibo/__pycache__/pipelines.cpython-37.pyc
 weibo/__pycache__/settings.cpython-37.pyc
 
 weibo/spiders/__pycache__/rootknot.cpython-37.pyc
+ips/ips/__pycache__/items.cpython-37.pyc
+ips/ips/__pycache__/pipelines.cpython-37.pyc
+ips/ips/spiders/__pycache__/__init__.cpython-37.pyc
+ips/ips/spiders/__pycache__/ip_spider1.cpython-37.pyc
+ips/ips/spiders/__pycache__/ip_spider3.cpython-37.pyc
+ips/ips/spiders/__pycache__/ip_spider4.cpython-37.pyc
+ips/ips/spiders/__pycache__/ip_spider2.cpython-37.pyc

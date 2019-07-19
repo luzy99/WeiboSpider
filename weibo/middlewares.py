@@ -6,7 +6,14 @@
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+import random
+import pymysql
+from weibo import settings
+import requests
 
+
+def get_proxy():
+    return requests.get("http://118.24.52.95:5010/get/").text
 
 class RootknotSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -101,3 +108,24 @@ class WeiboDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class ProxyMiddleware(object):
+    proxylist = []
+
+    def __init__(self):
+        for r in self.getkeys():
+            self.proxylist.append('http://'+":".join(r))
+
+    def process_request(self, request, spider):
+        # request.meta['proxy'] = random.choice(self.proxylist)
+        request.meta['proxy'] = 'https://' + get_proxy()
+        print('UseProxy:',request.meta['proxy'])
+
+    def getkeys(self):
+        mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
+                               passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT ip,port FROM ips")
+        myresult = mycursor.fetchall()
+        return myresult
