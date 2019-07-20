@@ -4,18 +4,21 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
+import scrapy
 from scrapy import signals
 import random
 import pymysql
 from weibo import settings
 import requests
+from scrapy.downloadermiddlewares.retry import *
+import time
 
 
 def get_proxy():
-    return requests.get("http://118.24.52.95:5010/get/").text
+    return requests.get("http://127.0.0.1:5010/get/").text
 
-class RootknotSpiderMiddleware(object):
+
+class WeiboMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -25,6 +28,7 @@ class RootknotSpiderMiddleware(object):
         # This method is used by Scrapy to create your spiders.
         s = cls()
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
+        crawler.signals.connect(s.spider_closed, signal=signals.spider_closed)
         return s
 
     def process_spider_input(self, response, spider):
@@ -61,6 +65,12 @@ class RootknotSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+    def spider_closed(self, spider):
+        if spider.name == 'find_sons':
+            if spider.keylists == -1:
+                return
+            spider.start_requests()
 
 
 class WeiboDownloaderMiddleware(object):
@@ -120,7 +130,7 @@ class ProxyMiddleware(object):
     def process_request(self, request, spider):
         # request.meta['proxy'] = random.choice(self.proxylist)
         request.meta['proxy'] = 'https://' + get_proxy()
-        print('UseProxy:',request.meta['proxy'])
+        print('UseProxy:', request.meta['proxy'])
 
     def getkeys(self):
         mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
@@ -129,3 +139,35 @@ class ProxyMiddleware(object):
         mycursor.execute("SELECT ip,port FROM ips")
         myresult = mycursor.fetchall()
         return myresult
+
+
+class MyRetryMiddleware(RetryMiddleware):
+    logger = logging.getLogger(__name__)
+
+    def delete_proxy(self, proxy):
+        if proxy:
+            requests.get(
+                "http://127.0.0.1:5010/delete/?proxy={}".format(proxy))
+
+    def process_response(self, request, response, spider):
+        if request.meta.get('dont_retry', False):
+            return response
+        if response.status in self.retry_http_codes:
+            reason = response_status_message(response.status)
+            # 删除该代理
+            self.delete_proxy(request.meta.get('proxy', False))
+            time.sleep(random.randint(0, 1))
+            self.logger.warning('返回值异常, 进行重试...')
+            print('返回值异常, 进行重试...')
+            return self._retry(request, reason, spider) or response
+        return response
+
+    def process_exception(self, request, exception, spider):
+        if isinstance(exception, self.EXCEPTIONS_TO_RETRY) \
+                and not request.meta.get('dont_retry', False):
+            # 删除该代理
+            self.delete_proxy(request.meta.get('proxy', False))
+            time.sleep(random.randint(0, 1))
+            self.logger.warning('连接异常, 进行重试...')
+
+            return self._retry(request, exception, spider)

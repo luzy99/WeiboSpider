@@ -44,7 +44,10 @@ class RootknotPipeline(object):
 
 
 class FindsonsPipeline(object):
-    tableName = FindSonsSpider.key + '_findsons'
+    if FindSonsSpider.key == '':
+        tableName = RootknotSpider.key + '_findsons'
+    else:
+        tableName = FindSonsSpider.key + '_findsons'
 
     def __init__(self):
         self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,

@@ -15,6 +15,7 @@ class FindSonsSpider(scrapy.Spider):
     allowed_domains = ['m.weibo.cn']
     start_urls = []
     key = ''
+    keylists = ('',)
 
     @classmethod
     def changeKey(cls, key):
@@ -25,10 +26,14 @@ class FindSonsSpider(scrapy.Spider):
         self.changeKey(key)
 
     def start_requests(self):
-        self.start_urls = [
-            'https://m.weibo.cn/detail/{}'.format(result[0]) for result in self.getkeys()]
-        for url in self.start_urls:
-            yield scrapy.Request(url, callback=self.parse)
+        self.keylists = self.getkeys()
+        if self.keylists == -1:
+            return
+        else:
+            self.start_urls = [
+                'https://m.weibo.cn/detail/{}'.format(result[0]) for result in self.keylists]
+            for url in self.start_urls:
+                yield scrapy.Request(url, callback=self.parse)
 
     def parse(self, response):
         render_data = re.findall(
@@ -116,7 +121,22 @@ class FindSonsSpider(scrapy.Spider):
         mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
                                passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT mid FROM {}".format(
-            self.key+'_rootknot'))
-        myresult = mycursor.fetchall()
-        return myresult
+        count = 5
+        while count > 0:
+            try:
+                mycursor.execute("SELECT mid FROM {} WHERE flag = 0".format(
+                    self.key+'_rootknot'))
+                myresult = mycursor.fetchall()
+                mycursor.execute("UPDATE {} SET flag = 1 WHERE flag = 0".format(
+                    self.key+'_rootknot'))
+                mydb.commit()
+                if len(myresult) == 0:
+                    time.sleep(2)
+                    count -= 1
+                else:
+                    return myresult
+            except:
+                print("Select is failed")
+                time.sleep(5)
+        print('No more rootknots')
+        return -1
