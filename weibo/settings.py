@@ -23,7 +23,7 @@ NEWSPIDER_MODULE = 'weibo.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -34,7 +34,7 @@ DOWNLOAD_DELAY = 0
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -122,6 +122,6 @@ MYSQL_PASSWD = '123456'
 MYSQL_PORT = 3306
 
 RETRY_ENABLED = True
-RETRY_TIMES = 3
+RETRY_TIMES = 5
 RETRY_HTTP_CODES = [500, 503, 504, 400, 408, 418, 502, 403]
-RETRY_PRIORITY_ADJUST = - 1
+RETRY_PRIORITY_ADJUST = -1

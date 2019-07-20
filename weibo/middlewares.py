@@ -67,10 +67,11 @@ class WeiboMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
     def spider_closed(self, spider):
+        print('爬虫已停止！！！')
         if spider.name == 'find_sons':
             if spider.keylists == -1:
                 return
-            spider.start_requests()
+        spider.start_requests()
 
 
 class WeiboDownloaderMiddleware(object):
@@ -146,13 +147,14 @@ class MyRetryMiddleware(RetryMiddleware):
 
     def delete_proxy(self, proxy):
         if proxy:
+            print('删除', proxy[8:])
             requests.get(
-                "http://127.0.0.1:5010/delete/?proxy={}".format(proxy))
+                "http://127.0.0.1:5010/delete/?proxy={}".format(proxy[8:]))
 
     def process_response(self, request, response, spider):
-        if request.meta.get('dont_retry', False):
-            return response
-        if response.status in self.retry_http_codes:
+        #if request.meta.get('dont_retry', False):
+           # return response
+        if response.status != 200:
             reason = response_status_message(response.status)
             # 删除该代理
             self.delete_proxy(request.meta.get('proxy', False))
@@ -169,5 +171,5 @@ class MyRetryMiddleware(RetryMiddleware):
             self.delete_proxy(request.meta.get('proxy', False))
             time.sleep(random.randint(0, 1))
             self.logger.warning('连接异常, 进行重试...')
-
+            print('连接异常, 进行重试...')
             return self._retry(request, exception, spider)
