@@ -26,6 +26,11 @@ def run2(kw):
 
     #process.crawl(RootknotSpider, kw, 'key')
     process.crawl(FindSonsSpider, kw, 'key')
+    process.crawl(FindSonsSpider, kw, 'key')
+    process.crawl(FindSonsSpider, kw, 'key')
+    process.crawl(FindSonsSpider, kw, 'key')
+    process.crawl(FindSonsSpider, kw, 'key')
+    process.crawl(FindSonsSpider, kw, 'key')
     process.start()  # the script will block here until all crawling jobs are finished
 
 
@@ -40,7 +45,7 @@ if __name__ == "__main__":
         kw = sys.argv[1]
         print(kw)
         # run(kw)
-        run(kw)
+        run2(kw)
        # cmdrun(kw)
     except:
         print('[Input ERROR]')

@@ -29,6 +29,7 @@ class WeiboMiddleware(object):
         s = cls()
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         crawler.signals.connect(s.spider_closed, signal=signals.spider_closed)
+        crawler.signals.connect(s.spider_idle, signal=signals.spider_idle)
         return s
 
     def process_spider_input(self, response, spider):
@@ -68,10 +69,13 @@ class WeiboMiddleware(object):
 
     def spider_closed(self, spider):
         print('爬虫已停止！！！')
+
+    def spider_idle(self, spider):
+        print('爬虫准备重启！！！')
         if spider.name == 'find_sons':
-            if spider.keylists == -1:
-                return
-        spider.start_requests()
+            #spider.start_requests()
+            print(spider.name)
+
 
 
 class WeiboDownloaderMiddleware(object):
@@ -152,7 +156,7 @@ class MyRetryMiddleware(RetryMiddleware):
                 "http://127.0.0.1:5010/delete/?proxy={}".format(proxy[8:]))
 
     def process_response(self, request, response, spider):
-        #if request.meta.get('dont_retry', False):
+        # if request.meta.get('dont_retry', False):
            # return response
         if response.status != 200:
             reason = response_status_message(response.status)

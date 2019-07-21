@@ -47,9 +47,9 @@ COOKIES_ENABLED = False
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-SPIDER_MIDDLEWARES = {
-    'weibo.middlewares.WeiboMiddleware': 543,
-}
+# SPIDER_MIDDLEWARES = {
+#     'weibo.middlewares.WeiboMiddleware': 543,
+# }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
@@ -122,6 +122,6 @@ MYSQL_PASSWD = '123456'
 MYSQL_PORT = 3306
 
 RETRY_ENABLED = True
-RETRY_TIMES = 5
+RETRY_TIMES = 10
 RETRY_HTTP_CODES = [500, 503, 504, 400, 408, 418, 502, 403]
-RETRY_PRIORITY_ADJUST = -1
+DOWNLOAD_TIMEOUT = 8

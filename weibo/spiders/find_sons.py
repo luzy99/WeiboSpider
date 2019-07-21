@@ -7,7 +7,7 @@ import re
 from ..items import FindsonsItem
 import time
 import requests
-# from weibo.spiders.rootknot import RootknotSpider
+from scrapy import signals
 
 
 class FindSonsSpider(scrapy.Spider):
@@ -25,15 +25,26 @@ class FindSonsSpider(scrapy.Spider):
         super(FindSonsSpider, self).__init__(*args, **kwargs)
         self.changeKey(key)
 
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        from_crawler = super(FindSonsSpider, cls).from_crawler
+        s = from_crawler(crawler, *args, **kwargs)
+        crawler.signals.connect(s.restart, signal=scrapy.signals.spider_idle)
+        return s
+
     def start_requests(self):
-        self.keylists = self.getkeys()
-        if self.keylists == -1:
-            return
-        else:
-            self.start_urls = [
-                'https://m.weibo.cn/detail/{}'.format(result[0]) for result in self.keylists]
-            for url in self.start_urls:
-                yield scrapy.Request(url, callback=self.parse)
+        # self.keylists = self.getkeys()
+        # if self.keylists == -1:
+        #     return
+        # else:
+        #     self.start_urls = [
+        #         'https://m.weibo.cn/detail/{}'.format(result[0]) for result in self.keylists]
+        #     for url in self.start_urls:
+        #         yield scrapy.Request(url, callback=self.parse)
+
+        myurl = self.geturl()
+        if myurl != -1:
+            yield scrapy.Request(myurl, callback=self.parse)
 
     def parse(self, response):
         render_data = re.findall(
@@ -65,7 +76,7 @@ class FindSonsSpider(scrapy.Spider):
             resp_json = json.loads(resp.text)
             if resp_json['ok'] == 1:
                 pages = resp_json['data']['max']
-                for page in range(1, pages):
+                for page in range(1, pages+1):
                     yield scrapy.Request('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page={}'.
                                          format(item['mid'], page), callback=self.search_son_list)
             else:
@@ -77,7 +88,8 @@ class FindSonsSpider(scrapy.Spider):
         if ss['ok'] == 1:
             sonlist = ss['data']['data']
             for son in sonlist:
-                yield scrapy.Request('https://m.weibo.cn/detail/{}'.format(son['id']), callback=self.getinfo)
+                # yield scrapy.Request('https://m.weibo.cn/detail/{}'.format(son['id']), callback=self.getinfo)
+                self.crawler.engine.crawl(scrapy.Request('https://m.weibo.cn/detail/{}'.format(son['id']), callback=self.getinfo), self)
         else:
             pass
 
@@ -107,16 +119,10 @@ class FindSonsSpider(scrapy.Spider):
         item['reposts_count'] = status['reposts_count']
         item['comments_count'] = status['comments_count']
         item['attitudes_count'] = status['attitudes_count']
-        #pages = (item['reposts_count'] // 9) + 1
+        # pages = (item['reposts_count'] // 9) + 1
         yield item
 
-        '''if status['reposts_count'] == 0:
-            pass
-        else:
-            for page in range(1, pages):
-                yield scrapy.Request('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page={}'.
-                                     format(status['id'], page), callback=self.search_son_list)'''
-
+# 已弃用
     def getkeys(self):
         mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
                                passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
@@ -137,6 +143,28 @@ class FindSonsSpider(scrapy.Spider):
                     return myresult
             except:
                 print("Select is failed")
+                count -= 1
                 time.sleep(5)
         print('No more rootknots')
         return -1
+
+    def restart(self):
+        print('重启》》')
+        myurl = self.geturl()
+        if myurl != -1:
+            self.crawler.engine.crawl(scrapy.Request(myurl, callback=self.parse), self)
+
+    def geturl(self):
+        mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
+                               passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
+        mycursor = mydb.cursor()
+        try:
+            mycursor.execute("SELECT mid FROM {} WHERE flag = 0 LIMIT 1".format(
+                self.key+'_rootknot'))
+            myresult = mycursor.fetchone()[0]
+            mycursor.execute("UPDATE {} SET flag = 1 WHERE mid = {}".format(
+                self.key+'_rootknot', myresult))
+            mydb.commit()
+            return 'https://m.weibo.cn/detail/{}'.format(myresult)
+        except:
+            return -1

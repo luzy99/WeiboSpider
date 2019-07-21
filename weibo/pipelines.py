@@ -39,26 +39,27 @@ class RootknotPipeline(object):
         return item
 
     def close_spider(self, spider):
-        self.cur.close()
-        self.conn.close()
+        if spider.name == 'rootknot':
+            self.cur.close()
+            self.conn.close()
 
 
 class FindsonsPipeline(object):
     tableName = ''
 
     def open_spider(self, spider):
-        if spider.name == 'find_sons':
-            self.tableName = spider.key + '_findsons'
-            self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
-                                        passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
-            self.cur = self.conn.cursor()
-            sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` (`mid` varchar(255) NOT NULL,`pid` varchar(255) NULL," \
-                "`userid` varchar(255) NULL,`verified_type` varchar(255) NULL,`text` varchar(2555) NULL," \
-                "`created_at` timestamp(0) NULL,`reposts_count` int(10) NULL,`comments_count` int(10) NULL," \
-                "`attitudes_count` int(10) NULL,PRIMARY KEY (`mid`))".format(
-                    self.tableName)
-            self.cur.execute(sql)
-            self.conn.commit()
+        #if spider.name == 'find_sons':
+        self.tableName = spider.key + '_findsons'
+        self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
+                                    passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
+        self.cur = self.conn.cursor()
+        sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` (`mid` varchar(255) NOT NULL,`pid` varchar(255) NULL," \
+            "`userid` varchar(255) NULL,`verified_type` varchar(255) NULL,`text` varchar(2555) NULL," \
+            "`created_at` timestamp(0) NULL,`reposts_count` int(10) NULL,`comments_count` int(10) NULL," \
+            "`attitudes_count` int(10) NULL,PRIMARY KEY (`mid`))".format(
+                self.tableName)
+        self.cur.execute(sql)
+        self.conn.commit()
 
     def process_item(self, item, spider):
         if isinstance(item, FindsonsItem):
@@ -81,5 +82,6 @@ class FindsonsPipeline(object):
         return item
 
     def close_spider(self, spider):
-        self.cur.close()
-        self.conn.close()
+        if spider.name == 'find_sons':
+            self.cur.close()
+            self.conn.close()
