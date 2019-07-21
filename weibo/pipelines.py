@@ -22,7 +22,7 @@ class RootknotPipeline(object):
                                         db=settings.MYSQL_DBNAME, charset='utf8')
             self.cur = self.conn.cursor()
             sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` "\
-                "(`mid` varchar(20) NOT NULL,`flag` tinyint(1) NOT NULL,"\
+                "(`mid` varchar(255) NOT NULL,`flag` tinyint(1) NOT NULL,"\
                 "PRIMARY KEY (`mid`))".format(self.tableName)
             self.cur.execute(sql)
             self.conn.commit()

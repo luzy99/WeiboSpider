@@ -8,7 +8,7 @@ from ..items import RootknotItem
 class RootknotSpider(scrapy.Spider):
     name = 'rootknot'
     allowed_domains = ['m.weibo.cn']
-    key = '微博'
+    key = ''
     start_urls = []
 
     @classmethod
@@ -27,26 +27,27 @@ class RootknotSpider(scrapy.Spider):
     def parse(self, response):
         ss = json.loads(response.body)
         bloglist = ss['data']['cards'][0]['card_group']
+
         for i in bloglist:
-            yield scrapy.Request('https://m.weibo.cn/detail/'+i['mblog']['id'],
-                                 callback=self.root_knot)
+            if "retweeted_status" in i['mblog'].keys():
+                print('转发')
+                mid = i['mblog']['retweeted_status']['id']
+            else:
+                print('原创')
+                mid = i['mblog']['id']
+            yield scrapy.Request(
+                'https://m.weibo.cn/api/statuses/repostTimeline?id={}&page=1'.format(mid), callback=self.getpage, meta={'mid': mid})
 
-    def root_knot(self, response):
-        retweet = response.text.find("retweeted_status")
+    def getpage(self, response):
         item = RootknotItem()
-        if retweet == -1:
-            print('原创')
-            render_data = re.findall(
-                'render_data=\[(.+)\]\[0\]\|\|',
-                response.text.replace(' ', '').replace('\n', ''))[0]
-
-            data = json.loads(render_data)
-            status = data['status']
-            item['mid'] = status['id']
-        else:
-            temp = response.text[retweet:retweet+200]
-            rootid = re.findall(r'"id":.+"(.*?)",', temp, re.S)[0]
-            print('转发自', rootid)
-            item['mid'] = rootid
         item['flag'] = 0
-        yield item
+
+        resp_json = json.loads(response.body)
+        if resp_json['ok'] == 1:
+            pages = resp_json['data']['max']
+        else:
+            pages = 1
+        mid = response.meta['mid']
+        for p in range(0, pages//10+1):
+            item['mid'] = 'id={}&page={}'.format(mid, 10*p+1)
+            yield item
