@@ -6,26 +6,26 @@
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import pymysql
 from weibo import settings
-from weibo.spiders.rootknot import RootknotSpider
-from weibo.spiders.find_sons import FindSonsSpider
 from weibo.items import FindsonsItem
 from weibo.items import RootknotItem
 
 
 class RootknotPipeline(object):
-    tableName = RootknotSpider.key + '_rootknot'
+    tableName = ''
 
-    def __init__(self):
-        self.conn = pymysql.connect(host=settings.MYSQL_HOST,
-                                    user=settings.MYSQL_USER,
-                                    passwd=settings.MYSQL_PASSWD,
-                                    db=settings.MYSQL_DBNAME, charset='utf8')
-        self.cur = self.conn.cursor()
-        sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` "\
-            "(`mid` varchar(20) NOT NULL,`flag` tinyint(1) NOT NULL,"\
-            "PRIMARY KEY (`mid`))".format(self.tableName)
-        self.cur.execute(sql)
-        self.conn.commit()
+    def open_spider(self, spider):
+        if spider.name == 'rootknot':
+            self.tableName = spider.key + '_rootknot'
+            self.conn = pymysql.connect(host=settings.MYSQL_HOST,
+                                        user=settings.MYSQL_USER,
+                                        passwd=settings.MYSQL_PASSWD,
+                                        db=settings.MYSQL_DBNAME, charset='utf8')
+            self.cur = self.conn.cursor()
+            sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` "\
+                "(`mid` varchar(255) NOT NULL,`flag` tinyint(1) NOT NULL,"\
+                "PRIMARY KEY (`mid`))".format(self.tableName)
+            self.cur.execute(sql)
+            self.conn.commit()
 
     def process_item(self, item, spider):
         if isinstance(item, RootknotItem):
@@ -39,22 +39,25 @@ class RootknotPipeline(object):
         return item
 
     def close_spider(self, spider):
-        self.cur.close()
-        self.conn.close()
+        if spider.name == 'rootknot':
+            self.cur.close()
+            self.conn.close()
 
 
 class FindsonsPipeline(object):
-    tableName = FindSonsSpider.key + '_findsons'
+    tableName = ''
 
-    def __init__(self):
+    def open_spider(self, spider):
+        #if spider.name == 'find_sons':
+        self.tableName = spider.key + '_findsons'
         self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
                                     passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
         self.cur = self.conn.cursor()
         sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` (`mid` varchar(255) NOT NULL,`pid` varchar(255) NULL," \
-              "`userid` varchar(255) NULL,`verified_type` varchar(255) NULL,`text` varchar(2555) NULL," \
-              "`created_at` timestamp(0) NULL,`reposts_count` int(10) NULL,`comments_count` int(10) NULL," \
-              "`attitudes_count` int(10) NULL,PRIMARY KEY (`mid`))".format(
-                  self.tableName)
+            "`userid` varchar(255) NULL,`verified_type` varchar(255) NULL,`text` varchar(2555) NULL," \
+            "`created_at` timestamp(0) NULL,`reposts_count` int(10) NULL,`comments_count` int(10) NULL," \
+            "`attitudes_count` int(10) NULL,PRIMARY KEY (`mid`))".format(
+                self.tableName)
         self.cur.execute(sql)
         self.conn.commit()
 
@@ -74,10 +77,11 @@ class FindsonsPipeline(object):
                 ", created_at, reposts_count, comments_count, attitudes_count) VALUES " \
                 "(%s, %s, %s, %s, %s, %s, %s, %s, %s)".format(self.tableName)
             self.cur.execute(sql, (mid, pid, userid, verified_type, text,
-                                created_at, reposts_count, comments_count, attitudes_count))
+                                   created_at, reposts_count, comments_count, attitudes_count))
             self.conn.commit()
         return item
 
     def close_spider(self, spider):
-        self.cur.close()
-        self.conn.close()
+        if spider.name == 'find_sons':
+            self.cur.close()
+            self.conn.close()
