@@ -15,15 +15,21 @@ class FindSonsSpider(scrapy.Spider):
     allowed_domains = ['m.weibo.cn']
     start_urls = []
     key = ''
+    pages = 0
     keylists = ('',)
 
     @classmethod
     def changeKey(cls, key):
         cls.key = key
 
-    def __init__(self, key=None, *args, **kwargs):
+    @classmethod
+    def changePages(cls, pages):
+        cls.pages = pages
+
+    def __init__(self, key=None, pages = 0, *args, **kwargs):
         super(FindSonsSpider, self).__init__(*args, **kwargs)
         self.changeKey(key)
+        self.changePages(pages)
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -42,7 +48,9 @@ class FindSonsSpider(scrapy.Spider):
         #     for url in self.start_urls:
         #         yield scrapy.Request(url, callback=self.parse)
 
-        myurl = self.geturl()
+        tempurl = self.geturl()
+        mid = re.findall('id=(.*?)&page', tempurl)[0]
+        myurl = 'https://m.weibo.cn/detail/' + mid
         if myurl != -1:
             yield scrapy.Request(myurl, callback=self.parse)
 
@@ -75,8 +83,8 @@ class FindSonsSpider(scrapy.Spider):
             resp.encoding = 'utf-8'
             resp_json = json.loads(resp.text)
             if resp_json['ok'] == 1:
-                pages = resp_json['data']['max']
-                for page in range(1, pages+1):
+                #pages = resp_json['data']['max']
+                for page in range(self.pages, self.pages+10):
                     yield scrapy.Request('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page={}'.
                                          format(item['mid'], page), callback=self.search_son_list)
             else:
@@ -98,7 +106,6 @@ class FindSonsSpider(scrapy.Spider):
             'render_data=\[(.+)\]\[0\]\|\|', response.text.replace(' ', '').replace('\n', ''))[0]
         data = json.loads(render_data)
         status = data['status']
-
         item = FindsonsItem()
         item['mid'] = status['id']
         item['text'] = status['raw_text']
@@ -123,7 +130,7 @@ class FindSonsSpider(scrapy.Spider):
         yield item
 
 # 已弃用
-    def getkeys(self):
+'''    def getkeys(self):
         mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
                                passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
         mycursor = mydb.cursor()
@@ -146,7 +153,8 @@ class FindSonsSpider(scrapy.Spider):
                 count -= 1
                 time.sleep(5)
         print('No more rootknots')
-        return -1
+        return -1'''
+
 
     def restart(self):
         print('重启》》')
@@ -165,6 +173,8 @@ class FindSonsSpider(scrapy.Spider):
             mycursor.execute("UPDATE {} SET flag = 1 WHERE mid = {}".format(
                 self.key+'_rootknot', myresult))
             mydb.commit()
-            return 'https://m.weibo.cn/detail/{}'.format(myresult)
+            mypage = re.findall("page=(.*?)", myresult)
+            self.changePages(mypage)
+            return 'https://m.weibo.cn/api/statuses/repostTimeline?{}'.format(myresult)
         except:
             return -1
