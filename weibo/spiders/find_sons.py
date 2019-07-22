@@ -24,12 +24,11 @@ class FindSonsSpider(scrapy.Spider):
 
     @classmethod
     def changePages(cls, pages):
-        cls.pages = pages
+        cls.pages = int(pages)
 
-    def __init__(self, key=None, pages = 0, *args, **kwargs):
+    def __init__(self, key=None, *args, **kwargs):
         super(FindSonsSpider, self).__init__(*args, **kwargs)
         self.changeKey(key)
-        self.changePages(pages)
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -49,10 +48,12 @@ class FindSonsSpider(scrapy.Spider):
         #         yield scrapy.Request(url, callback=self.parse)
 
         tempurl = self.geturl()
-        mid = re.findall('id=(.*?)&page', tempurl)[0]
-        myurl = 'https://m.weibo.cn/detail/' + mid
-        if myurl != -1:
-            yield scrapy.Request(myurl, callback=self.parse)
+        print(tempurl)
+        if tempurl != -1:
+            mid = re.findall('id=(\d+)&page', tempurl)[0]
+            print(mid)
+            myurl = 'https://m.weibo.cn/detail/' + mid
+            yield scrapy.Request(myurl, callback=self.parse, dont_filter=True)
 
     def parse(self, response):
         render_data = re.findall(
@@ -83,10 +84,10 @@ class FindSonsSpider(scrapy.Spider):
             resp.encoding = 'utf-8'
             resp_json = json.loads(resp.text)
             if resp_json['ok'] == 1:
-                #pages = resp_json['data']['max']
+                # pages = resp_json['data']['max']
                 for page in range(self.pages, self.pages+10):
                     yield scrapy.Request('https://m.weibo.cn/api/statuses/repostTimeline?id={}&page={}'.
-                                         format(item['mid'], page), callback=self.search_son_list)
+                                         format(item['mid'], page), callback=self.search_son_list, dont_filter=True)
             else:
                 item['pid'] = '-1'
         yield item
@@ -97,7 +98,8 @@ class FindSonsSpider(scrapy.Spider):
             sonlist = ss['data']['data']
             for son in sonlist:
                 # yield scrapy.Request('https://m.weibo.cn/detail/{}'.format(son['id']), callback=self.getinfo)
-                self.crawler.engine.crawl(scrapy.Request('https://m.weibo.cn/detail/{}'.format(son['id']), callback=self.getinfo), self)
+                self.crawler.engine.crawl(scrapy.Request(
+                    'https://m.weibo.cn/detail/{}'.format(son['id']), callback=self.getinfo, dont_filter=True), self)
         else:
             pass
 
@@ -129,52 +131,63 @@ class FindSonsSpider(scrapy.Spider):
         # pages = (item['reposts_count'] // 9) + 1
         yield item
 
-# 已弃用
-'''    def getkeys(self):
-        mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
-                               passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
-        mycursor = mydb.cursor()
-        count = 5
-        while count > 0:
-            try:
-                mycursor.execute("SELECT mid FROM {} WHERE flag = 0".format(
-                    self.key+'_rootknot'))
-                myresult = mycursor.fetchall()
-                mycursor.execute("UPDATE {} SET flag = 1 WHERE flag = 0".format(
-                    self.key+'_rootknot'))
-                mydb.commit()
-                if len(myresult) == 0:
-                    time.sleep(2)
-                    count -= 1
-                else:
-                    return myresult
-            except:
-                print("Select is failed")
-                count -= 1
-                time.sleep(5)
-        print('No more rootknots')
-        return -1'''
 
+# 已弃用
+    # def getkeys(self):
+    #     mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
+    #                            passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
+    #     mycursor = mydb.cursor()
+    #     count = 5
+    #     while count > 0:
+    #         try:
+    #             mycursor.execute("SELECT mid FROM {} WHERE flag = 0".format(
+    #                 self.key+'_rootknot'))
+    #             myresult = mycursor.fetchall()
+    #             mycursor.execute("UPDATE {} SET flag = 1 WHERE flag = 0".format(
+    #                 self.key+'_rootknot'))
+    #             mydb.commit()
+    #             if len(myresult) == 0:
+    #                 time.sleep(2)
+    #                 count -= 1
+    #             else:
+    #                 return myresult
+    #         except:
+    #             print("Select is failed")
+    #             count -= 1
+    #             time.sleep(5)
+    #     print('No more rootknots')
+    #     return -1
 
     def restart(self):
-        print('重启》》')
-        myurl = self.geturl()
-        if myurl != -1:
-            self.crawler.engine.crawl(scrapy.Request(myurl, callback=self.parse), self)
+        print('重启...')
+        tempurl = self.geturl()
+
+        if tempurl != -1:
+            mid = re.findall('id=(\d+)&page', tempurl)[0]
+            myurl = 'https://m.weibo.cn/detail/' + mid
+            self.crawler.engine.crawl(scrapy.Request(
+                myurl, callback=self.parse, dont_filter=True), self)
 
     def geturl(self):
         mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
                                passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
         mycursor = mydb.cursor()
-        try:
-            mycursor.execute("SELECT mid FROM {} WHERE flag = 0 LIMIT 1".format(
-                self.key+'_rootknot'))
-            myresult = mycursor.fetchone()[0]
-            mycursor.execute("UPDATE {} SET flag = 1 WHERE mid = {}".format(
-                self.key+'_rootknot', myresult))
-            mydb.commit()
-            mypage = re.findall("page=(.*?)", myresult)
-            self.changePages(mypage)
-            return 'https://m.weibo.cn/api/statuses/repostTimeline?{}'.format(myresult)
-        except:
-            return -1
+        count = 3
+        while count > 0:
+            try:
+                mycursor.execute("SELECT mid FROM {} WHERE flag = 0 LIMIT 1".format(
+                    self.key+'_rootknot'))
+                myresult = mycursor.fetchone()[0]
+                mycursor.execute("UPDATE {} SET flag = 1 WHERE mid = '{}'".format(
+                    self.key+'_rootknot', myresult))
+                mydb.commit()
+                print(myresult)
+                mypage = re.findall("page=(\d+)", myresult)[0]
+                self.changePages(mypage)
+                print(mypage)
+                return 'https://m.weibo.cn/api/statuses/repostTimeline?{}'.format(myresult)
+            except:
+                count -= 1
+                time.sleep(2)
+        print('读取出错！！！')
+        return -1
