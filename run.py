@@ -7,6 +7,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from scrapy import cmdline
 import os
+import time
 
 
 def run(kw):
@@ -35,8 +36,13 @@ def run2(kw):
 
 
 def cmdrun(kw):
-    os.system("scrapy crawl rootknot -a key={}".format(kw))
-    os.system("scrapy crawl find_sons -a key={}".format(kw))
+    os.popen("scrapy crawl rootknot -a key={}".format(kw))
+    time.sleep(5)
+    os.popen("scrapy crawl find_sons -a key={}".format(kw))
+    os.popen("scrapy crawl find_sons -a key={}".format(kw))
+    os.popen("scrapy crawl find_sons -a key={}".format(kw))
+    os.popen("scrapy crawl find_sons -a key={}".format(kw))
+    os.popen("scrapy crawl find_sons -a key={}".format(kw))
     print('启动成功')
 
 
@@ -45,7 +51,7 @@ if __name__ == "__main__":
         kw = sys.argv[1]
         print(kw)
         # run(kw)
-        run2(kw)
-       # cmdrun(kw)
+        # run2(kw)
+        cmdrun(kw)
     except:
         print('[Input ERROR]')
