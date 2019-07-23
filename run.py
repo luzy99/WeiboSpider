@@ -25,7 +25,7 @@ def run2(kw):
     crawler_settings.setmodule(my_settings)
     process = CrawlerProcess(settings=crawler_settings)
 
-    #process.crawl(RootknotSpider, kw, 'key')
+    process.crawl(RootknotSpider, kw, 'key')
     process.crawl(FindSonsSpider, kw, 'key')
     process.crawl(FindSonsSpider, kw, 'key')
     process.crawl(FindSonsSpider, kw, 'key')

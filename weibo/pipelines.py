@@ -19,6 +19,7 @@ class RootknotPipeline(object):
             pool = redis.ConnectionPool(
                 host='localhost', port=6379, decode_responses=True)
             self.r = redis.Redis(connection_pool=pool)
+            self.r.delete('rootknot')
 
     def process_item(self, item, spider):
         if isinstance(item, RootknotItem):
@@ -46,6 +47,10 @@ class FindsonsPipeline(object):
             "PRIMARY KEY (`mid`))".format(self.tableName)
         self.cur.execute(sql)
         self.conn.commit()
+        pool = redis.ConnectionPool(
+            host='localhost', port=6379, decode_responses=True)
+        self.r = redis.Redis(connection_pool=pool)
+        self.r.delete('userid')
 
     def process_item(self, item, spider):
         if isinstance(item, FindsonsItem):
@@ -59,7 +64,7 @@ class FindsonsPipeline(object):
             comments_count = item.get("comments_count", "N/A")
             attitudes_count = item.get("attitudes_count", "N/A")
             followers_count = item.get("followers_count", "N/A")
-            follow_count = item.get("follow_count","N/A")
+            follow_count = item.get("follow_count", "N/A")
             print(item)
             sql = "insert ignore into {}(mid, pid, userid, verified_type, text" \
                 ", created_at, reposts_count, comments_count, attitudes_count," \
@@ -69,6 +74,9 @@ class FindsonsPipeline(object):
                                    created_at, reposts_count, comments_count,
                                    attitudes_count, followers_count, follow_count))
             self.conn.commit()
+
+            self.r.rpush(
+                'userid', 'https://m.weibo.cn/api/container/getIndex?containerid=230283'+str(userid)+'_-_INFO')
         return item
 
     def close_spider(self, spider):
