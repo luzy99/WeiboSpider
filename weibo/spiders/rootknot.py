@@ -40,7 +40,6 @@ class RootknotSpider(scrapy.Spider):
 
     def getpage(self, response):
         item = RootknotItem()
-        item['flag'] = 0
 
         resp_json = json.loads(response.body)
         if resp_json['ok'] == 1:

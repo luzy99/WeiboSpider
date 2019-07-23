@@ -8,6 +8,7 @@ import pymysql
 from weibo import settings
 from weibo.items import FindsonsItem
 from weibo.items import RootknotItem
+import redis
 
 
 class RootknotPipeline(object):
@@ -15,40 +16,25 @@ class RootknotPipeline(object):
 
     def open_spider(self, spider):
         if spider.name == 'rootknot':
-            self.tableName = spider.key + '_rootknot'
-            self.conn = pymysql.connect(host=settings.MYSQL_HOST,
-                                        user=settings.MYSQL_USER,
-                                        passwd=settings.MYSQL_PASSWD,
-                                        db=settings.MYSQL_DBNAME, charset='utf8')
-            self.cur = self.conn.cursor()
-            sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` "\
-                "(`mid` varchar(255) NOT NULL,`flag` tinyint(1) NOT NULL,"\
-                "PRIMARY KEY (`mid`))".format(self.tableName)
-            self.cur.execute(sql)
-            self.conn.commit()
+            pool = redis.ConnectionPool(
+                host='localhost', port=6379, decode_responses=True)
+            self.r = redis.Redis(connection_pool=pool)
 
     def process_item(self, item, spider):
         if isinstance(item, RootknotItem):
             mid = item.get("mid")
-            flag = item.get("flag")
-
-            sql = "insert ignore into {}(mid, flag) VALUES (%s,%s)".format(
-                self.tableName)
-            self.cur.execute(sql, (mid, flag))
-            self.conn.commit()
+            self.r.rpush('rootknot', mid)
         return item
 
     def close_spider(self, spider):
-        if spider.name == 'rootknot':
-            self.cur.close()
-            self.conn.close()
+        pass
 
 
 class FindsonsPipeline(object):
     tableName = ''
 
     def open_spider(self, spider):
-        #if spider.name == 'find_sons':
+        # if spider.name == 'find_sons':
         self.tableName = spider.key + '_findsons'
         self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
                                     passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
