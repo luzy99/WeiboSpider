@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
-import pymysql
+import redis
 from weibo import settings
 import json
 import re
@@ -75,6 +75,8 @@ class FindSonsSpider(scrapy.Spider):
         item['reposts_count'] = status['reposts_count']
         item['comments_count'] = status['comments_count']
         item['attitudes_count'] = status['attitudes_count']
+        item['followers_count'] = status['user']['followers_count']
+        item['follow_count'] = status['user']['follow_count']
 
         if item['reposts_count'] == 0:
             pass
@@ -128,6 +130,8 @@ class FindSonsSpider(scrapy.Spider):
         item['reposts_count'] = status['reposts_count']
         item['comments_count'] = status['comments_count']
         item['attitudes_count'] = status['attitudes_count']
+        item['followers_count'] = status['user']['followers_count']
+        item['follow_count'] = status['user']['follow_count']
         # pages = (item['reposts_count'] // 9) + 1
         yield item
 
@@ -169,18 +173,12 @@ class FindSonsSpider(scrapy.Spider):
                 myurl, callback=self.parse, dont_filter=True), self)
 
     def geturl(self):
-        mydb = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
-                               passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
-        mycursor = mydb.cursor()
+        pool = redis.ConnectionPool(host='localhost', port=6379, decode_responses=True)
+        r = redis.Redis(connection_pool=pool)
         count = 3
         while count > 0:
             try:
-                mycursor.execute("SELECT mid FROM {} WHERE flag = 0 LIMIT 1".format(
-                    self.key+'_rootknot'))
-                myresult = mycursor.fetchone()[0]
-                mycursor.execute("UPDATE {} SET flag = 1 WHERE mid = '{}'".format(
-                    self.key+'_rootknot', myresult))
-                mydb.commit()
+                myresult = r.lpop('rootknot')
                 print(myresult)
                 mypage = re.findall("page=(\d+)", myresult)[0]
                 self.changePages(mypage)

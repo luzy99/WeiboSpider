@@ -27,3 +27,5 @@ class FindsonsItem(scrapy.Item):
     reposts_count = scrapy.Field()
     comments_count = scrapy.Field()
     attitudes_count = scrapy.Field()
+    followers_count = scrapy.Field()
+    follow_count = scrapy.Field()
