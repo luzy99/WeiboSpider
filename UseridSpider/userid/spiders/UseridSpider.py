@@ -55,16 +55,16 @@ class UseridSpider(RedisSpider):
         ss = json.loads(response.body)
         cards = ss['data']['cards']
         item = useridItem()
-        if（ss['ok']==0):
-            uid=re.findall('230283(.*?)_-_',response.url)[0]
-            req=requests.get('https://m.weibo.cn/api/container/getIndex?uid='+uid+'&type=uid&value='+uid)
-            req_json=json.loads(req.text)
-            item['userName']=req_json['userInfo']['screen_name']
-            yield item
-        elif()   
-            item['userName']=cards[0]['card_group'][1]['item_content']
-            item['sex']=cards[1]['card_group'][1]['item_content']
-            item['location']=cards[1]['card_group'][2]['item_content']
-            item['userid']=re.findall('230283(.*?)_-_',response.url)[0]
-            yield item
+        # if（ss['ok']==0):
+        #     uid=re.findall('230283(.*?)_-_',response.url)[0]
+        #     req=requests.get('https://m.weibo.cn/api/container/getIndex?uid='+uid+'&type=uid&value='+uid)
+        #     req_json=json.loads(req.text)
+        #     item['userName']=req_json['userInfo']['screen_name']
+        #     yield item
+        # elif()
+        item['userName']=cards[0]['card_group'][1]['item_content']
+        item['sex']=cards[1]['card_group'][1]['item_content']
+        item['location']=cards[1]['card_group'][2]['item_content']
+        item['userid']=re.findall('230283(.*?)_-_',response.url)[0]
+        yield item
 
