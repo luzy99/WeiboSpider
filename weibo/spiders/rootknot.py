@@ -21,7 +21,7 @@ class RootknotSpider(scrapy.Spider):
         url = 'https://m.weibo.cn/api/container/getIndex?containerid=100103type%3D60%26q%3D' + \
             key+'&page_type=searchall'
         self.start_urls.append(url)
-        for i in range(2, 6):
+        for i in range(2, 3):
             self.start_urls.append(url+'&page='+str(i))
 
     def parse(self, response):

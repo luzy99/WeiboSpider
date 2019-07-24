@@ -29,3 +29,4 @@ class FindsonsItem(scrapy.Item):
     attitudes_count = scrapy.Field()
     followers_count = scrapy.Field()
     follow_count = scrapy.Field()
+    rootknot = scrapy.Field()

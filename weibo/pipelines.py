@@ -43,7 +43,7 @@ class FindsonsPipeline(object):
         sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` (`mid` varchar(255) NOT NULL,`pid` varchar(255) NULL," \
             "`userid` varchar(255) NULL,`verified_type` varchar(255) NULL,`text` varchar(2555) NULL," \
             "`created_at` timestamp(0) NULL,`reposts_count` int(10) NULL,`comments_count` int(10) NULL," \
-            "`attitudes_count` int(10) NULL,`followers_count` int(10) NULL ,`follow_count` int(10) NULL ," \
+            "`attitudes_count` int(10) NULL,`followers_count` int(10) NULL ,`follow_count` int(10) NULL ,`rootknot` varchar(255) NULL," \
             "PRIMARY KEY (`mid`))".format(self.tableName)
         self.cur.execute(sql)
         self.conn.commit()
@@ -65,13 +65,14 @@ class FindsonsPipeline(object):
             attitudes_count = item.get("attitudes_count", "N/A")
             followers_count = item.get("followers_count", "N/A")
             follow_count = item.get("follow_count", "N/A")
+            rootknot = item.get("rootknot", "N/A")
             sql = "insert ignore into {}(mid, pid, userid, verified_type, text" \
                 ", created_at, reposts_count, comments_count, attitudes_count," \
-                " followers_count, follow_count) VALUES " \
-                "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(self.tableName)
+                " followers_count, follow_count, rootknot) VALUES " \
+                "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(self.tableName)
             self.cur.execute(sql, (mid, pid, userid, verified_type, text,
                                    created_at, reposts_count, comments_count,
-                                   attitudes_count, followers_count, follow_count))
+                                   attitudes_count, followers_count, follow_count, rootknot))
             self.conn.commit()
 
             self.r.rpush(

@@ -77,6 +77,7 @@ class FindSonsSpider(scrapy.Spider):
         item['attitudes_count'] = status['attitudes_count']
         item['followers_count'] = status['user']['followers_count']
         item['follow_count'] = status['user']['follow_count']
+        item['rootknot'] = item['mid']
 
         if item['reposts_count'] == 0:
             pass
@@ -132,6 +133,7 @@ class FindSonsSpider(scrapy.Spider):
         item['attitudes_count'] = status['attitudes_count']
         item['followers_count'] = status['user']['followers_count']
         item['follow_count'] = status['user']['follow_count']
+        item['rootknot'] = status['retweeted_status']['id']
         # pages = (item['reposts_count'] // 9) + 1
         yield item
 
