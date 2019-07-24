@@ -62,9 +62,18 @@ class UseridSpider(RedisSpider):
         #     item['userName']=req_json['userInfo']['screen_name']
         #     yield item
         # elif()
-        item['userName']=cards[0]['card_group'][1]['item_content']
-        item['sex']=cards[1]['card_group'][1]['item_content']
-        item['location']=cards[1]['card_group'][2]['item_content']
-        item['userid']=re.findall('230283(.*?)_-_',response.url)[0]
-        yield item
+        try:
+            item['userName']=cards[0]['card_group'][1]['item_content']
+            item['sex']=cards[1]['card_group'][1]['item_content']
+            item['location']=cards[1]['card_group'][2]['item_content']
+            item['userid']=re.findall('230283(.*?)_-_',response.url)[0]
+            yield item
+        except IndexError:
+            item['userName']=cards[0]['card_group'][1]['item_content']
+            item['sex']='无'
+            item['location']='无'
+            item['userid']=re.findall('230283(.*?)_-_',response.url)[0]
+            yield item
+
+
 
