@@ -37,14 +37,16 @@ def run2(kw):
 
 def cmdrun(kw):
     os.popen("scrapy crawl rootknot -a key={}".format(kw))
-    time.sleep(5)
+    print('[rootknot]启动成功')
+    time.sleep(2)
     os.popen("scrapy crawl find_sons -a key={}".format(kw))
     os.popen("scrapy crawl find_sons -a key={}".format(kw))
     os.popen("scrapy crawl find_sons -a key={}".format(kw))
     os.popen("scrapy crawl find_sons -a key={}".format(kw))
     os.popen("scrapy crawl find_sons -a key={}".format(kw))
-    print('启动成功')
-
+    print('[find_sons]启动成功')
+    os.popen("cd ./UseridSpider/userid && python cmdline.py {}".format(kw))
+    print('[userid]启动成功')
 
 if __name__ == "__main__":
     try:

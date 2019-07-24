@@ -65,7 +65,6 @@ class FindsonsPipeline(object):
             attitudes_count = item.get("attitudes_count", "N/A")
             followers_count = item.get("followers_count", "N/A")
             follow_count = item.get("follow_count", "N/A")
-            print(item)
             sql = "insert ignore into {}(mid, pid, userid, verified_type, text" \
                 ", created_at, reposts_count, comments_count, attitudes_count," \
                 " followers_count, follow_count) VALUES " \

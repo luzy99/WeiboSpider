@@ -12,3 +12,10 @@ key = 搜索内容
 ```
 scrapy crawl rootknot -a key=xxx
 ```
+
+运行run.py一键启动3个爬虫[rootknot, find_sons, UseridSpider]
+```
+python run.py KEY
+```
+
+基本实现分布式架构，可多线程运行

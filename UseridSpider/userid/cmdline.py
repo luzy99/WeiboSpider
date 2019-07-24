@@ -6,6 +6,10 @@ import sys
 
 def cmdrun(kw):
     os.popen("scrapy crawl UseridSpider -a key={}".format(kw))
+    os.popen("scrapy crawl UseridSpider -a key={}".format(kw))
+    os.popen("scrapy crawl UseridSpider -a key={}".format(kw))
+    os.popen("scrapy crawl UseridSpider -a key={}".format(kw))
+    os.popen("scrapy crawl UseridSpider -a key={}".format(kw))
 
     print('启动成功')
 
