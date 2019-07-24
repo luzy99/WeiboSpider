@@ -35,7 +35,7 @@ class useridPipeline(object):
         self.tableName = spider.key + '_userinfo'
         # 连接数据库
         self.connect = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
-                                       passwd='s19990615z', db=settings.MYSQL_DBNAME, charset='utf8')
+                                       passwd='123456', db=settings.MYSQL_DBNAME, charset='utf8')
 
         # 通过cursor执行增删查改
         self.cursor = self.connect.cursor()
