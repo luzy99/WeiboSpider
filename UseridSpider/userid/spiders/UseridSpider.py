@@ -16,7 +16,7 @@ class UseridSpider(RedisSpider):
 #    id='5717775404'
 
     # https://m.weibo.cn/api/container/getIndex?containerid=2302835717775404_-_INFO
-    start_urls = []
+
 
     @classmethod
     def changeKey(cls, key):
@@ -27,7 +27,8 @@ class UseridSpider(RedisSpider):
         super(UseridSpider, self).__init__(*args, **kwargs)
         self.changeKey(key)
 
-    # def start_requests(self):
+#https://m.weibo.cn/api/container/getIndex?uid=1887790981&type=uid&value=1887790981    
+# def start_requests(self):
     #      idList = []
         # con=pymysql.connect(
         #     host='127.0.0.1',  # 数据库地址
@@ -53,15 +54,17 @@ class UseridSpider(RedisSpider):
     def parse(self, response):
         ss = json.loads(response.body)
         cards = ss['data']['cards']
-        print(cards)
         item = useridItem()
-        item['userName']=cards[0]['card_group'][1]['item_content']
-        item['sex']=cards[1]['card_group'][1]['item_content']
-        item['location']=cards[1]['card_group'][2]['item_content']
-#       item['registerTime']=cards[0]['card_group'][3]['item_content']
-        item['userid']=re.findall('230283(.*?)_-_',response.url)[0]
-#        print("::::::::::",response.url)
-#        print(item['userid'])
-
-        yield item
+        if（ss['ok']==0):
+            uid=re.findall('230283(.*?)_-_',response.url)[0]
+            req=requests.get('https://m.weibo.cn/api/container/getIndex?uid='+uid+'&type=uid&value='+uid)
+            req_json=json.loads(req.text)
+            item['userName']=req_json['userInfo']['screen_name']
+            yield item
+        elif()   
+            item['userName']=cards[0]['card_group'][1]['item_content']
+            item['sex']=cards[1]['card_group'][1]['item_content']
+            item['location']=cards[1]['card_group'][2]['item_content']
+            item['userid']=re.findall('230283(.*?)_-_',response.url)[0]
+            yield item
 
