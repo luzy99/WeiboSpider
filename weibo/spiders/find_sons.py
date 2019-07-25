@@ -78,6 +78,7 @@ class FindSonsSpider(scrapy.Spider):
         item['followers_count'] = status['user']['followers_count']
         item['follow_count'] = status['user']['follow_count']
         item['rootknot'] = item['mid']
+        item['generation'] = 0
 
         if item['reposts_count'] == 0:
             pass
@@ -134,6 +135,8 @@ class FindSonsSpider(scrapy.Spider):
         item['followers_count'] = status['user']['followers_count']
         item['follow_count'] = status['user']['follow_count']
         item['rootknot'] = status['retweeted_status']['id']
+
+        item['generation'] = item['text'].count('//@') + 1
         # pages = (item['reposts_count'] // 9) + 1
         yield item
 
@@ -175,7 +178,8 @@ class FindSonsSpider(scrapy.Spider):
                 myurl, callback=self.parse, dont_filter=True), self)
 
     def geturl(self):
-        pool = redis.ConnectionPool(host='localhost', port=6379, decode_responses=True)
+        pool = redis.ConnectionPool(
+            host='localhost', port=6379, decode_responses=True)
         r = redis.Redis(connection_pool=pool)
         count = 3
         while count > 0:

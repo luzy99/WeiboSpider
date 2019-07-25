@@ -30,3 +30,4 @@ class FindsonsItem(scrapy.Item):
     followers_count = scrapy.Field()
     follow_count = scrapy.Field()
     rootknot = scrapy.Field()
+    generation = scrapy.Field()
