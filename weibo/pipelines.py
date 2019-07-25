@@ -6,56 +6,51 @@
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import pymysql
 from weibo import settings
-from weibo.spiders.rootknot import RootknotSpider
-from weibo.spiders.find_sons import FindSonsSpider
 from weibo.items import FindsonsItem
 from weibo.items import RootknotItem
+import redis
+
 
 class RootknotPipeline(object):
-    tableName = RootknotSpider.key + '_rootknot'
+    tableName = ''
 
-    def __init__(self):
-        self.conn = pymysql.connect(host=settings.MYSQL_HOST,
-                                    user=settings.MYSQL_USER,
-                                    passwd=settings.MYSQL_PASSWD,
-                                    db=settings.MYSQL_DBNAME, charset='utf8')
-        self.cur = self.conn.cursor()
-        sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` "\
-            "(`mid` varchar(20) NOT NULL,`flag` tinyint(1) NOT NULL,"\
-            "PRIMARY KEY (`mid`))".format(self.tableName)
-        self.cur.execute(sql)
-        self.conn.commit()
+    def open_spider(self, spider):
+        if spider.name == 'rootknot':
+            pool = redis.ConnectionPool(
+                host='localhost', port=6379, decode_responses=True)
+            self.r = redis.Redis(connection_pool=pool)
+            self.r.delete('rootknot')
 
     def process_item(self, item, spider):
         if isinstance(item, RootknotItem):
             mid = item.get("mid")
-            flag = item.get("flag")
-
-            sql = "insert ignore into {}(mid, flag) VALUES (%s,%s)".format(
-                self.tableName)
-            self.cur.execute(sql, (mid, flag))
-            self.conn.commit()
+            self.r.rpush('rootknot', mid)
         return item
 
     def close_spider(self, spider):
-        self.cur.close()
-        self.conn.close()
+        pass
 
 
 class FindsonsPipeline(object):
-    tableName = RootknotSpider.key + '_findsons'
+    tableName = ''
 
-    def __init__(self):
+    def open_spider(self, spider):
+        # if spider.name == 'find_sons':
+        self.tableName = spider.key + '_findsons'
         self.conn = pymysql.connect(host=settings.MYSQL_HOST, user=settings.MYSQL_USER,
                                     passwd=settings.MYSQL_PASSWD, db=settings.MYSQL_DBNAME, charset='utf8')
         self.cur = self.conn.cursor()
         sql = "CREATE TABLE IF NOT EXISTS `weibo`.`{}` (`mid` varchar(255) NOT NULL,`pid` varchar(255) NULL," \
-              "`userid` varchar(255) NULL,`verified_type` varchar(255) NULL,`text` varchar(2555) NULL," \
-              "`created_at` timestamp(0) NULL,`reposts_count` int(10) NULL,`comments_count` int(10) NULL," \
-              "`attitudes_count` int(10) NULL,PRIMARY KEY (`mid`))".format(
-                  self.tableName)
+            "`userid` varchar(255) NULL,`verified_type` varchar(255) NULL,`text` varchar(2555) NULL," \
+            "`created_at` timestamp(0) NULL,`reposts_count` int(10) NULL,`comments_count` int(10) NULL," \
+            "`attitudes_count` int(10) NULL,`followers_count` int(10) NULL ,`follow_count` int(10) NULL ,`rootknot` varchar(255) NULL," \
+            "`generation` int(10) NULL, PRIMARY KEY (`mid`))".format(self.tableName)
         self.cur.execute(sql)
         self.conn.commit()
+        pool = redis.ConnectionPool(
+            host='localhost', port=6379, decode_responses=True)
+        self.r = redis.Redis(connection_pool=pool)
+        self.r.delete('userid')
 
     def process_item(self, item, spider):
         if isinstance(item, FindsonsItem):
@@ -68,15 +63,24 @@ class FindsonsPipeline(object):
             reposts_count = item.get("reposts_count", "N/A")
             comments_count = item.get("comments_count", "N/A")
             attitudes_count = item.get("attitudes_count", "N/A")
-            print(item)
+            followers_count = item.get("followers_count", "N/A")
+            follow_count = item.get("follow_count", "N/A")
+            rootknot = item.get("rootknot", "N/A")
+            generation = item.get("generation", "N/A")
             sql = "insert ignore into {}(mid, pid, userid, verified_type, text" \
-                ", created_at, reposts_count, comments_count, attitudes_count) VALUES " \
-                "(%s, %s, %s, %s, %s, %s, %s, %s, %s)".format(self.tableName)
+                ", created_at, reposts_count, comments_count, attitudes_count," \
+                " followers_count, follow_count, rootknot, generation) VALUES " \
+                "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(self.tableName)
             self.cur.execute(sql, (mid, pid, userid, verified_type, text,
-                                created_at, reposts_count, comments_count, attitudes_count))
+                                   created_at, reposts_count, comments_count,
+                                   attitudes_count, followers_count, follow_count, rootknot, generation))
             self.conn.commit()
+
+            self.r.rpush(
+                'userid', 'https://m.weibo.cn/api/container/getIndex?containerid=230283'+str(userid)+'_-_INFO')
         return item
 
     def close_spider(self, spider):
-        self.cur.close()
-        self.conn.close()
+        if spider.name == 'find_sons':
+            self.cur.close()
+            self.conn.close()

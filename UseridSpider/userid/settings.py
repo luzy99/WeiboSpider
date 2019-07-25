@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for ips project
+# Scrapy settings for userid project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -9,14 +9,29 @@
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
+import redis
 import random
+from userid import scrapy_redis
 
-DOWNLOAD_DELAY=1
-BOT_NAME = 'ips'
 
-SPIDER_MODULES = ['ips.spiders']
-NEWSPIDER_MODULE = 'ips.spiders'
+BOT_NAME = 'userid'
 
+SPIDER_MODULES = ['userid.spiders']
+NEWSPIDER_MODULE = 'userid.spiders'
+
+DUPEFILTER_CLASS = 'scrapy_redis.dupefilter.RFPDupeFilter'
+SCHEDULER = 'scrapy_redis.scheduler.Scheduler'
+SCHEDULER_PERSIST = True
+REDIS_URL = 'redis://127.0.0.1:6379'
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+# REDIS_PASSWORD = ''
+
+#SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.PriorityQueue'
+
+
+# Crawl responsibly by identifying yourself (and your website) on the user-agent
+#USER_AGENT = 'userid (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -27,7 +42,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
+#DOWNLOAD_DELAY = 1
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -39,34 +54,56 @@ ROBOTSTXT_OBEY = False
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
+# DEFAULT_REQUEST_HEADERS = {
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 #   'Accept-Language': 'en',
-#}
+# }
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'ips.middlewares.IpsSpiderMiddleware': 543,
-#}
+# SPIDER_MIDDLEWARES = {
+#    'userid.middlewares.useridSpiderMiddleware': 543,
+# }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'ips.middlewares.IpsDownloaderMiddleware': 543,
-#}
-
+# DOWNLOADER_MIDDLEWARES = {
+#    'userid.middlewares.useridDownloaderMiddleware': 543,
+# }
+DOWNLOADER_MIDDLEWARES = {
+    'userid.middlewares.ProxyMiddleware': 100,
+    'userid.middlewares.MyRetryMiddleware': 500,
+}
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
+# EXTENSIONS = {
 #    'scrapy.extensions.telnet.TelnetConsole': None,
-#}
+# }
+
+# user agent 列表
+USER_AGENT_LIST = [
+    'MSIE (MSIE 6.0; X11; Linux; i686) Opera 7.23',
+    'Opera/9.20 (Macintosh; Intel Mac OS X; U; en)',
+    'Opera/9.0 (Macintosh; PPC Mac OS X; U; en)',
+    'iTunes/9.0.3 (Macintosh; U; Intel Mac OS X 10_6_2; en-ca)',
+    'Mozilla/4.76 [en_jp] (X11; U; SunOS 5.8 sun4u)',
+    'iTunes/4.2 (Macintosh; U; PPC Mac OS X 10.2)',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:5.0) Gecko/20100101 Firefox/5.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:9.0) Gecko/20100101 Firefox/9.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:16.0) Gecko/20120813 Firefox/16.0',
+    'Mozilla/4.77 [en] (X11; I; IRIX;64 6.5 IP30)',
+    'Mozilla/4.8 [en] (X11; U; SunOS; 5.7 sun4u)'
+]
+# 随机生成user agent
+USER_AGENT = random.choice(USER_AGENT_LIST)
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'ips.pipelines.IpsPipeline': 300,
-#}
+
+ITEM_PIPELINES = {
+    'userid.pipelines.useridPipeline': 300,
+    'scrapy_redis.pipelines.RedisPipeline': 400,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -89,39 +126,16 @@ ROBOTSTXT_OBEY = False
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-# user agent 列表
-USER_AGENT_LIST = [
-    'MSIE (MSIE 6.0; X11; Linux; i686) Opera 7.23',
-    'Opera/9.20 (Macintosh; Intel Mac OS X; U; en)',
-    'Opera/9.0 (Macintosh; PPC Mac OS X; U; en)',
-    'iTunes/9.0.3 (Macintosh; U; Intel Mac OS X 10_6_2; en-ca)',
-    'Mozilla/4.76 [en_jp] (X11; U; SunOS 5.8 sun4u)',
-    'iTunes/4.2 (Macintosh; U; PPC Mac OS X 10.2)',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:5.0) Gecko/20100101 Firefox/5.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:9.0) Gecko/20100101 Firefox/9.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:16.0) Gecko/20120813 Firefox/16.0',
-    'Mozilla/4.77 [en] (X11; I; IRIX;64 6.5 IP30)',
-    'Mozilla/4.8 [en] (X11; U; SunOS; 5.7 sun4u)'
-]
-# 随机生成user agent
-USER_AGENT = random.choice(USER_AGENT_LIST)
-
-
-ITEM_PIPELINES = {
-    'ips.pipelines.IpsPipeline': 300,
-}
-
 MYSQL_HOST = '127.0.0.1'
-MYSQL_DBNAME = 'ips'
+MYSQL_DBNAME = 'weibo'
 MYSQL_USER = 'root'  # 数据库账号，请修改
-MYSQL_PASSWD = 'root'
+MYSQL_PASSWD = '123456'
 MYSQL_PORT = 3306
 
-PROXIES = [
-    {'ip_port': '111.11.228.75:80', 'user_pass': ''},
-    {'ip_port': '120.198.243.22:80', 'user_pass': ''},
-    {'ip_port': '111.8.60.9:8123', 'user_pass': ''},
-    {'ip_port': '101.71.27.120:80', 'user_pass': ''},
-    {'ip_port': '122.96.59.104:80', 'user_pass': ''},
-    {'ip_port': '122.224.249.122:8088', 'user_pass': ''},
-]
+CONCURRENT_REQUESTS = 32
+DOWNLOAD_DELAY = 0
+COOKIES_ENABLED = False
+RETRY_ENABLED = True
+RETRY_TIMES = 10
+RETRY_HTTP_CODES = [500, 503, 504, 400, 408, 418, 502, 403]
+DOWNLOAD_TIMEOUT = 8

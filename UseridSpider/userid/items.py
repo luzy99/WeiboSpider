@@ -8,8 +8,11 @@
 import scrapy
 
 
-class IpsItem(scrapy.Item):
+class useridItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    ip=scrapy.Field()
-    port=scrapy.Field()
+    userid = scrapy.Field()
+    userName = scrapy.Field()
+    sex = scrapy.Field()
+    location = scrapy.Field()
+#    registerTime = scrapy.Field()

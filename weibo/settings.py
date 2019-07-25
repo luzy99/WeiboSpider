@@ -23,18 +23,18 @@ NEWSPIDER_MODULE = 'weibo.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 0
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -48,14 +48,15 @@ DOWNLOAD_DELAY = 1
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
-#    'weibo.middlewares.RootknotSpiderMiddleware': 543,
+#     'weibo.middlewares.WeiboMiddleware': 543,
 # }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'weibo.middlewares.WeiboDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'weibo.middlewares.ProxyMiddleware': 100,
+    'weibo.middlewares.MyRetryMiddleware': 500,
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
@@ -119,3 +120,8 @@ MYSQL_DBNAME = 'weibo'
 MYSQL_USER = 'root'  # 数据库账号，请修改
 MYSQL_PASSWD = '123456'
 MYSQL_PORT = 3306
+
+RETRY_ENABLED = True
+RETRY_TIMES = 10
+RETRY_HTTP_CODES = [500, 503, 504, 400, 408, 418, 502, 403]
+DOWNLOAD_TIMEOUT = 8
