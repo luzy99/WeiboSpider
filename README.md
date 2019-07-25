@@ -17,5 +17,23 @@ scrapy crawl rootknot -a key=xxx
 ```
 python run.py KEY
 ```
-
 基本实现分布式架构，可多线程运行
+2019.7.25
+前端页面初步整合，可通过页面键入文本启动后端爬虫
+
+## [:warning:NOTICE]
+#### Requirements
+>pip install
+```
+pymsql
+scrapy
+scrapy-redis
+redis
+requests
+pyecharts
+jieba
+echarts-countries-pypkg
+pip install echarts-china-provinces-pypkg
+pip install echarts-china-cities-pypkg
+```
+Thanks for @jhao104's [proxy_pool](https://github.com/jhao104/proxy_pool.git)

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>关系图案例</title>
+	<!-- 引入 ECharts 文件 -->
+	<script src="../static/js/echarts.js" type="text/javascript" charset="utf-8"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+</head>
+
+<body>
+	<!-- 为 ECharts 准备一个具备大小（宽高）的 容器 -->
+	<div id="chart1" style="width: 80%;height: 500px;top: 500px;left: 10%;"></div>
+</body>
+
+</html>
+<script type="text/javascript">
+	// 基于准备好的容器(这里的容器是id为chart1的div)，初始化echarts实例
+	var chart1 = echarts.init(document.getElementById("chart1"));
+	chart1.showLoading();
+	$.get('../static/getdata.json', function (webkitDep) {
+		chart1.hideLoading();
+		option = {
+			legend: {
+				data: webkitDep.categories
+			},
+			series: [{
+				type: 'graph',
+				layout: 'force',
+				focusNodeAdjacency: true,
+				animation: false,
+				roam: true,
+				label: {
+					normal: {
+						position: 'right',
+						formatter: function (params) {//触发之后返回的参数，这个函数是关键
+							if (1) {//如果触发节点
+								return params.data.username;//返回标签
+							}
+						}
+
+					},
+
+				},
+				lineStyle: {
+					curveness: 0.1,
+					opacity: 0.5,
+					width: 1
+
+				},
+				tooltip: {                  // 提示框的配置
+					formatter: function (param) {
+						return param.data.id;
+					}
+				},
+				draggable: false,
+				data: webkitDep.nodes,
+				categories: webkitDep.categories,
+				force: {
+					// initLayout: 'circular'
+					// repulsion: 20,
+					edgeLength: 40,
+					repulsion: 20,
+					gravity: 0.2
+				},
+				edges: webkitDep.links
+			}]
+		};
+
+		chart1.setOption(option);
+	});
+	
+</script>
